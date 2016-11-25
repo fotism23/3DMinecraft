@@ -1,4 +1,4 @@
-#include <GL/glut.h>		// Need to include it here because the GL* types are required
+#include <GL/glut.h>		// Need to include it here because the GL* types are required.
 #define PI 3.1415265359
 #define PIdiv180 3.1415265359/180.0
 
@@ -6,7 +6,7 @@
 //Note: All angles in degrees  //
 /////////////////////////////////
 
-struct SF3dVector  //Float 3d-vect, normally used
+struct SF3dVector  //Float 3d-vect, normally used.
 {
 	GLfloat x,y,z;
 };

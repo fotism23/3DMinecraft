@@ -66,7 +66,7 @@ void generateRandomColor(float* color) {
 	}
 }
 
-void setPoint(int x, int y, int z) {
+void setPoint(float x, float y, float z) {
 	glTranslatef(0.0f, 0.0f, 0.0f);
 	glTranslatef((GLfloat)x, (GLfloat)y, (GLfloat)z);
 }
@@ -78,8 +78,8 @@ void drawGrid() {
 	glBegin(GL_LINES);
 	for (GLfloat i = 0; i <= N; i += 1) {
 		glVertex3f(i, 0, 0);
-		glVertex3f(i, 0, N);
-		glVertex3f(N, 0, i);
+		glVertex3f(i, 0, (GLfloat)N);
+		glVertex3f((GLfloat)N, 0, i);
 		glVertex3f(0, 0, i);
 	}
 	glEnd();
@@ -88,7 +88,7 @@ void drawGrid() {
 
 void drawCube(float x, float y, float z, float r, float g, float b) {
 	glPushMatrix();
-	setPoint((int)x, (int)y, (int)z);
+	setPoint(x, y, z);
 	//Draw edges for the cube.
 	glBegin(GL_LINES);
 	glColor3f(0.0f, 0.0f, 0.0f);
@@ -194,6 +194,53 @@ void drawCube(float x, float y, float z, float r, float g, float b) {
 	glPopMatrix();
 }
 
+void drawCharacter()
+{
+	if (camera == CAMERA_MODE_FPS) return;
+	setPoint(Player.positionX, (int )Player.positionY, Player.positionZ);
+	
+	// Draw body (a 20x20 spherical mesh of radius 0.75 at height 0.75)
+	glColor3f(1.0, 1.0, 1.0); // set drawing color to white
+
+	glPushMatrix();
+	glRotatef(-90, 1, 0, 0);
+	glRotatef(180, 0, 0, 1);
+
+	glPushMatrix();
+	glTranslatef(0.0f, 0.0f, 0.3f);
+	glutSolidSphere(0.3, 20, 20);
+	glPopMatrix();
+
+	// Draw the head (a sphere of radius 0.25 at height 1.75)
+	glPushMatrix();
+	glTranslatef(0.0f, 0.0f, 0.7f); // position head
+	glutSolidSphere(0.15, 20, 20); // head sphere
+
+	// Draw Eyes (two small black spheres)
+	glColor3f(0.0, 0.0, 0.0); // eyes are black
+	glPushMatrix();
+	glTranslatef(0.0f, -0.18f, 0.10f); // lift eyes to final position
+	glPushMatrix();
+	glTranslatef(-0.05f, 0.0f, 0.0f);
+	glutSolidSphere(0.05, 10, 10); // right eye
+	glPopMatrix();
+	glPushMatrix();
+	glTranslatef(+0.05f, 0.0f, 0.0f);
+	glutSolidSphere(0.05, 10, 10); // left eye
+	glPopMatrix();
+	glPopMatrix();
+
+	// Draw Nose (the nose is an orange cone)
+	glColor3f(1.0, 0.5, 0.5); // nose is orange
+	glPushMatrix();
+	glRotatef(90.0, 1.0, 0.0, 0.0); // rotate to point along -y
+	glutSolidCone(0.08, 0.5, 10, 2); // draw cone
+	glPopMatrix();
+	glPopMatrix();
+
+	glPopMatrix();
+}
+
 void drawLevels() {
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
@@ -281,15 +328,32 @@ void removeCube(int _all) {
 }
 
 void getAvailabeCubes() {
+	if (Player.score < 5) return;
 	Cube *c = &cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ];
 	if (c->toGive == 0) return;
 	Player.availableCubes++;
 	c->toGive--;
+	if (c->toGive == 0) {
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 0.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 0.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 1.0f;
+	}
+	else if (c->toGive == 1) {
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 1.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 1.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 0.0f;
+	}
+	else if (c->toGive == 2) {
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 1.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 0.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 0.0f;
+	}
 	Player.score -= 5;
-	generateRandomColor(c->color);
+
 }
 
 void drawScore() {
+	if (lightning != 0) glDisable(GL_LIGHTING);
 	std::ostringstream oss;
 
 	oss << "Score: " << Player.score
@@ -339,48 +403,47 @@ void drawScore() {
 }
 
 void drawSpotLightningMode() {
-	glEnable(GL_LIGHTING);
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, whiteLight);
 
-	/****************
-	*Test Each Light*
-	****************/
-	/*
-	glEnable(GL_LIGHT0);
-	glLightfv(GL_LIGHT0, GL_POSITION, spotlights[2]);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-	*/
-	
 	for (int i = 0; i < NUM_LIGHTS; i++) {
-		int lt = GL_LIGHT0 + i;
+		int lt = GL_LIGHT1 + i;
 		glEnable(lt);
 		glLightfv(lt, GL_POSITION, spotlights[i]);
 		glLightfv(lt, GL_SPECULAR, lightSpecular);
 		glLightfv(lt, GL_DIFFUSE, lightDiffuse);
 		glLightfv(lt, GL_AMBIENT, lightAmbient);
 	}
-	//glDisable(GL_LIGHTING);
 }
 
 void drawTorchLightningMode() {
-	flashlight.position[0] = Player.positionX;
-	flashlight.position[1] = Player.positionY;
-	flashlight.position[2] = Player.positionZ;
-	flashlight.position[3] = 1.0;
-	glEnable(GL_LIGHTING);
+	flashlight.position[0] = Player.positionX + 1;
+	flashlight.position[1] = 0;
+	flashlight.position[2] = Player.positionZ +- 1;
+	flashlight.position[3] = 0.0;
+
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, whiteLight);
 	glEnable(GL_LIGHT0);
+
 	glLightfv(GL_LIGHT0, GL_POSITION, flashlight.position);
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, flashlight.spotDirection);
-	//glDisable(GL_LIGHTING);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 25.0);
+	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1f);
 }
 
 void drawLights() {
 	if (lightning == SPOT_LIGHTNING_MODE) {
+		glDisable(GL_LIGHT0);
+		glEnable(GL_LIGHTING);
 		drawSpotLightningMode();
 	}
 	else if (lightning == TORCH_LIGHTNING_MODE) {
+		for (int i = 0; i < NUM_LIGHTS; i++) {
+			int lt = GL_LIGHT1 + i;
+			glDisable(lt);
+		}
+		glEnable(GL_LIGHTING);
 		drawTorchLightningMode();
 	}
 	else glDisable(GL_LIGHTING);
@@ -392,10 +455,10 @@ void kickCube() {
 	int * current = (int *)malloc(3 * sizeof(int));
 	int cubeCount = 0;
 
-	current[0] = Player.positionX;
-	current[1] = Player.positionY;
-	current[2] = Player.positionZ;
-	
+	current[0] = (int)Player.positionX;
+	current[1] = (int)Player.positionY;
+	current[2] = (int)Player.positionZ;
+
 	while (current[0] < N && current[1] >= 0 && current[2] >= 0 && current[2] < N)
 	{
 		nextPos = calculateNextCubePosition(current[0], current[1], current[2]);
@@ -411,20 +474,20 @@ void kickCube() {
 		current[2] = nextPos[2];
 	}
 
-	current[0] = Player.positionX;
-	current[1] = Player.positionY;
-	current[2] = Player.positionZ;
+	current[0] = (int)Player.positionX;
+	current[1] = (int)Player.positionY;
+	current[2] = (int)Player.positionZ;
 
-	if (debug) {
+	if (DEBUG) {
 		printf("Current Point : %d %d %d  Target Point : %d %d %d \n", current[0], current[1], current[2], lastPos[0], lastPos[1], lastPos[2]);
 		printf("Count = %d\n", cubeCount);
-	} 
+	}
 
 	Cube *tempArray = (Cube *)malloc(cubeCount * sizeof(Cube));
 	int i = 0;
 
 	current = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
-	
+
 	while (i < cubeCount) {
 		tempArray[i].color[0] = cubes[current[0]][current[1]][current[2]].color[0];
 		tempArray[i].color[1] = cubes[current[0]][current[1]][current[2]].color[1];
@@ -436,7 +499,7 @@ void kickCube() {
 
 	current = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
 	current = calculateNextCubePosition(current[0], current[1], current[2]);
-	
+
 	i = 0;
 	while (i < cubeCount) {
 		cubes[current[0]][current[1]][current[2]].color[0] = tempArray[i].color[0];
@@ -446,7 +509,7 @@ void kickCube() {
 		current = calculateNextCubePosition(current[0], current[1], current[2]);
 		i++;
 	}
-	
+
 	current = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
 	generateRandomColor(cubes[current[0]][current[0]][current[0]].color);
 	cubes[current[0]][current[1]][current[2]].exists = false;
@@ -459,7 +522,7 @@ void restart() {
 	Player.eyeDirection = 0.0f;
 	Camera = CCamera();
 	Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
-	//wCamera.RotateY(-90);
+	//Camera.RotateY(-90);
 }
 
 void gameOver() {
@@ -551,12 +614,26 @@ void switchLight() {
 	}
 }
 
+void switchCamera() {
+	if (camera == CAMERA_MODE_FPS) {
+		Camera.MoveForwards((GLfloat)2);
+		Camera.RotateX(-20);
+		Camera.Move(F3dVector(0.0f, 1.0f, 0.0f));
+	}
+	else if (camera == CAMERA_MODE_TPS){
+		Camera.RotateX(+20);
+		Camera.MoveForwards((GLfloat)-2);
+		Camera.Move(F3dVector(0.0f, -1.0f, 0.0f));
+	}
+	camera = !camera;
+}
+
 void antiAllising() {
 	if (mssa) glEnable(GLUT_MULTISAMPLE);
 	else glDisable(GLUT_MULTISAMPLE);
 }
 
-void initializeFirstLevelCubeColors() {
+void initFirstLevelCubeColors() {
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			generateRandomColor(cubes[i][0][j].color);
@@ -574,7 +651,7 @@ void initializeFirstLevelCubeColors() {
 	cubes[center][0][center].toGive = 0;
 }
 
-void initializePlayer() {
+void initPlayer() {
 	Player.lives = STARTING_LIVES;
 	Player.gameOver = false;
 	Player.score = STARTING_SCORE;
@@ -584,32 +661,33 @@ void initializePlayer() {
 	Player.eyeDirection = 0.0f;
 }
 
-void initializeGame() {
+void initGame() {
 	initLights();
-	initializeFirstLevelCubeColors();
+	initFirstLevelCubeColors();
 	Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
 }
 
 void initLights() {
+
 	spotlights[0][0] = (GLfloat)N;
 	spotlights[0][1] = (GLfloat)N;
 	spotlights[0][2] = (GLfloat)N;
 	spotlights[0][3] = 1.0f;
 
 	spotlights[1][0] = 0.0f;
-	spotlights[2][1] = (GLfloat)N;
-	spotlights[3][2] = (GLfloat)N;
-	spotlights[4][3] = 1.0f;
+	spotlights[1][1] = (GLfloat)N;
+	spotlights[1][2] = (GLfloat)N;
+	spotlights[1][3] = 1.0f;
 
-	spotlights[1][0] = (GLfloat)N;
+	spotlights[2][0] = (GLfloat)N;
 	spotlights[2][1] = (GLfloat)N;
-	spotlights[3][2] = 0.0f;
-	spotlights[4][3] = 1.0f;
+	spotlights[2][2] = 0.0f;
+	spotlights[2][3] = 1.0f;
 
-	spotlights[1][0] = 0.0f;
-	spotlights[2][1] = (GLfloat)N;
+	spotlights[3][0] = 0.0f;
+	spotlights[3][1] = (GLfloat)N;
 	spotlights[3][2] = 0.0f;
-	spotlights[4][3] = 1.0f;
+	spotlights[3][3] = 1.0f;
 }
 
 void initGl() {
@@ -620,15 +698,15 @@ void initGl() {
 	glEnable(GL_COLOR_MATERIAL);
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
-
 }
 
 void renderScene() {
 	drawGrid();
 	drawLevels();
-	drawCube(-1, 3, -1, 1, 1, 1);
+	drawCharacter();
 	drawScore();
 	drawLights();
+	
 }
 
 void idle() {
@@ -637,7 +715,6 @@ void idle() {
 
 void windowDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
 	glLoadIdentity();
 	Camera.Render();
 	renderScene();
@@ -652,7 +729,7 @@ void windowReshape(GLsizei width, GLsizei height) {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(50, (GLdouble)width / (GLdouble)height, 0.0001, 30); //pws vlepw
+	gluPerspective(fov, (GLdouble)width / (GLdouble)height, 0.0001, 30); //pws vlepw
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -682,9 +759,10 @@ void windowKey(unsigned char key, int x, int y) {
 			Player.positionY,
 			Player.positionZ - (float)cos(angle) * (float)CAMERA_SPEED))
 		{
-			Camera.MoveForwards((GLfloat)-CAMERA_SPEED);
+			//Camera.MoveForwards((GLfloat)-CAMERA_SPEED);
 			Player.positionX -= (float)sin(angle) * (float)CAMERA_SPEED;
 			Player.positionZ -= (float)cos(angle) * (float)CAMERA_SPEED;
+			Camera.Move(F3dVector(-(float)sin(angle) * (float)CAMERA_SPEED, 0, -(float)cos(angle) * (float)CAMERA_SPEED));
 		}
 		break;
 	case MOVE_BACKWARDS:
@@ -692,9 +770,10 @@ void windowKey(unsigned char key, int x, int y) {
 			Player.positionY,
 			Player.positionZ + (float)cos(angle) * (float)CAMERA_SPEED))
 		{
-			Camera.MoveForwards((GLfloat)CAMERA_SPEED);
+			//Camera.MoveForwards((GLfloat)CAMERA_SPEED);
 			Player.positionX += (float)sin(angle) * (float)CAMERA_SPEED;
 			Player.positionZ += (float)cos(angle) * (float)CAMERA_SPEED;
+			Camera.Move(F3dVector((float)sin(angle) * (float)CAMERA_SPEED, 0, (float)cos(angle) * (float)CAMERA_SPEED));
 		}
 		break;
 	case SPACEBAR:
@@ -715,6 +794,10 @@ void windowKey(unsigned char key, int x, int y) {
 		break;
 	case ANTI_ALLISING:
 		mssa = !mssa;
+		break;
+	case SWITCH_CAMERA:
+		switchCamera();
+		break;
 	default:
 		printf("Pressing %d doesn't to nothing.\n", key);
 		break;
@@ -731,24 +814,30 @@ void windowMouseClick(int button, int state, int x, int y) {
 	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
 		kickCube();
 	}
+	else if (button == 3 && state == GLUT_UP && ENABLE_MOUSE_WHEEL) {
+		fov -= 0.5;
+	}
+	else if (button == 4 && state == GLUT_UP && ENABLE_MOUSE_WHEEL) {
+		fov += 0.5;
+	}
 	windowDisplay();
 	debug();
 }
 
 void windowMouseMovement(int x, int y) {
 	if (x < mousePositionX) {
-		Camera.RotateY(MOUSE_SENSITIVITY);
-		Player.eyeDirection += MOUSE_SENSITIVITY;
+		Camera.RotateY((GLfloat)MOUSE_SENSITIVITY);
+		Player.eyeDirection += (GLfloat)MOUSE_SENSITIVITY;
 	}
 	else {
-		Camera.RotateY(-MOUSE_SENSITIVITY);
-		Player.eyeDirection -= MOUSE_SENSITIVITY;
+		Camera.RotateY((GLfloat)-MOUSE_SENSITIVITY);
+		Player.eyeDirection -= (GLfloat)MOUSE_SENSITIVITY;
 	}
-	if (y < mousePositionY) {
-		Camera.RotateX(MOUSE_SENSITIVITY);
+	if (y < mousePositionY && !LOCK_MOUSE_Y) {
+		Camera.RotateX((GLfloat)MOUSE_SENSITIVITY);
 	}
-	else {
-		Camera.RotateX(-MOUSE_SENSITIVITY);
+	else if (!LOCK_MOUSE_Y) {
+		Camera.RotateX((GLfloat)-MOUSE_SENSITIVITY);
 	}
 	windowDisplay();
 	mousePositionX = x;
@@ -793,45 +882,60 @@ void allocateSpace() {
 }
 
 void displayMenu() {
-	
-	
 	char input[10];
-		puts("Give grid size: ");
+	puts("Give grid size: ");
+	fgets(input, 10, stdin);
+	int size = atoi(input);
+	printf("Selected size : %d\n", size);
+	puts("Enable debug? [y/n] :");
+	while (1) {
 		fgets(input, 10, stdin);
-		int size = atoi(input);
-		printf("Selected size : %d\n", size);
-		puts("Enable debug? [y/n] :");
-		while (1) {
-			fgets(input, 10, stdin);
-			if (input[0] == 'y' || input[0] == 'n') break;
-		}
-		if (input[0] == 'y') DEBUG = 1;
-		N = size;
-	
-	
+		if (input[0] == 'y' || input[0] == 'n') break;
+	}
+	if (input[0] == 'y') DEBUG = 1;
+	N = size;
+}
+
+void initGlut(int *argc, char **argv) {
+	glutInit(argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	glutCreateWindow("Assignment1");
+}
+
+void initGlutFunctions() {
+	glutDisplayFunc(&windowDisplay);
+	glutReshapeFunc(&windowReshape);
+	glutIdleFunc(&idle);
+}
+
+void initUserInput() {
+	glutKeyboardFunc(&windowKey);
+	glutMouseFunc(&windowMouseClick);
+	if (ENABLE_MOUSE_MOVEMENT) glutPassiveMotionFunc(&windowMouseMovement);
+}
+
+void loadDefaultParameters() {
+	lightning = 0;
+	animateDrop = false;
+	DEBUG = 0;
+	mssa = 1;
+	camera = CAMERA_MODE_FPS;
+	mousePositionX = MOUSE_POSITION_X;
+	mousePositionY = MOUSE_POSITION_Y;
+	fov = FOV;
 }
 
 int main(int argc, char **argv) {
 	displayMenu();
 	allocateSpace();
-
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
-	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Assignment1");
-
+	initGlut(&argc, argv);
 	initGl();
-	initializePlayer();
-	initializeGame();
-
-	glutDisplayFunc(&windowDisplay);
-	glutReshapeFunc(&windowReshape);
-	glutIdleFunc(&idle);
-
-	glutKeyboardFunc(&windowKey);
-	if(ENABLE_MOUSE_MOVEMENT) glutPassiveMotionFunc(&windowMouseMovement);
-	glutMouseFunc(&windowMouseClick);
-
+	initPlayer();
+	initGame();
+	loadDefaultParameters();
+	initGlutFunctions();
+	initUserInput();
 	glutMainLoop();
 	return 0;
 }

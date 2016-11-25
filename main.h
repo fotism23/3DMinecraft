@@ -13,28 +13,22 @@
 #define M_PI 3.14159265
 #endif
 
-#ifdef _WIN32
-#define OS 1
-#else
-#define OS 0
-#endif
-
 #define TWO_PI	(2*M_PI)
 
-//Color Parameters
+//Color Parameters.
 #define RED 0
 #define GREEN 1
 #define BLUE 2
 #define YELLOW 3
 
-//Window Parameters
+//Window Parameters.
 #define WINDOW_HEIGHT 768
 #define WINDOW_WIDTH 1024
 #define SCOREBOARD_Y_OFFSET 580
 #define SCOREBOARD_X_OFFSET 10
 #define MSSA 1
 
-//Keyboard Parameters
+//Keyboard Parameters.
 #define MOVE_LEFT 'a'
 #define MOVE_RIGHT 'd'
 #define MOVE_FOREWARDS 'w'
@@ -44,32 +38,33 @@
 #define DROP_CUBES 'r'
 #define SPACEBAR ' '
 #define SWITCH_LIGHTNING 'l'
+#define SWITCH_CAMERA 'c'
 #define KEY_ESC 27
 #define ANTI_ALLISING 'i'
 
-//Mouse Parameters
+//Mouse Parameters.
 #define MOUSE_SENSITIVITY 0.1
 #define KEYBORAD_SENSITIVITY 5.0
 #define CAMERA_SPEED 0.1
 #define MOUSE_POSITION_X 250;
 #define MOUSE_POSITION_Y 250;
 #define ENABLE_MOUSE_MOVEMENT 0
+#define LOCK_MOUSE_Y 1
+#define ENABLE_MOUSE_WHEEL 1
 
-//Game Prameters
+//Game Prameters.
 #define NUM_LIGHTS 4
 #define CAMERA_MODE_FPS 0
 #define CAMERA_MODE_TPS 1
 #define SPOT_LIGHTNING_MODE 1
 #define TORCH_LIGHTNING_MODE 2
+#define FOV 50
 
-//Player Parameters
+//Player Parameters.
 #define STARTING_LIVES 3
 #define STARTING_SCORE 50
-#define INITIAL_POSITION_X 5
-#define INITIAL_POSITION_Y 2
-#define INITIAL_POSITION_Z 5
 
-//Cube struct
+//Cube struct.
 typedef struct {
 	int exists = false;
 	int canBreak = false;
@@ -77,7 +72,7 @@ typedef struct {
 	float color[3];
 } Cube;
 
-//Player Data struct;
+//Player Data struct.
 typedef struct {
 	float positionX;
 	float positionY;
@@ -91,53 +86,56 @@ typedef struct {
 	int gameOver = false;
 } PlayerData;
 
+//Flashlight Data struct.
 typedef struct {
 	GLfloat  position[4];
 	GLfloat  spotDirection[3];
 	float cutOff;
 } Flashlight;
 
-//Spotlight Prameters
+//Spotlight Parameters.
 GLfloat lightAmbient[] = { 0.0, 0.0, 0.0, 1.0 };
 GLfloat lightDiffuse[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat lightSpecular[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat whiteLight[] = { 0.2f, 0.2f, 0.2f, 0.2f };
 GLfloat sourceLight[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 
-//Cube cubes[N][N][N];
+//Spotlight Positions.
+GLfloat spotlights[NUM_LIGHTS][4];
+
 Cube ***cubes;
 CCamera Camera;
 Flashlight flashlight;
 PlayerData Player;
 
-//Spotlight Positions
-GLfloat spotlights[NUM_LIGHTS][4];
-
 int N;
 float angle;
-int lightning = 0;
-int animateDrop = false;
-int DEBUG = 0;
-int mssa = 1;
-int mousePositionX = MOUSE_POSITION_X;
-int mousePositionY = MOUSE_POSITION_Y;
+int lightning;
+int animateDrop;
+int DEBUG;
+int mssa;
+int camera;
+int mousePositionX;
+int mousePositionY;
+float fov;
 
-//FPS Declarations
+//FPS Declarations.
 float frameCount = 0;
 int currentTime;
 int previousTime = 0;
 float fps;
 
-//Function Prototypes
+//Function Prototypes.
 void debug();
 void calculateFPS();
 void generateRandomColor(float* color);
-void setPoint(int x, int y, int z);
+void setPoint(float x, float y, float z);
 void drawGrid();
 void drawCube(float x, float y, float z, float r, float g, float b);
 void drawLevels();
 void setAvailableCubes(Cube *c);
 void addCube();
+void drawCharacter();
 void removeCube(int _all);
 void getAvailabeCubes();
 void drawScore();
@@ -153,10 +151,11 @@ void gameOver();
 void fall(float newPosX, float newPosY, float newPosZ);
 void dropCubes();
 void switchLight();
+void switchCamera();
 void antiAllising();
-void initializeFirstLevelCubeColors();
-void initializePlayer();
-void initializeGame();
+void initFirstLevelCubeColors();
+void initPlayer();
+void initGame();
 void initLights();
 void initGl();
 void windowReshape(GLsizei width, GLsizei height);
@@ -165,6 +164,9 @@ void windowMouseClick(int button, int state, int x, int y);
 void windowMouseMovement(int x, int y);
 void allocateSpace();
 void displayMenu();
+void initGlut(int *argc, char **argv);
+void initGlutFunctions();
+void initUserInput();
 int * calculateNextCubePosition(int currentBoxX, int currentBoxY, int currentBoxZ);
 int climb(float newPosX, float newPosY, float newPosZ);
 int checkMove(float newPosX, float newPosY, float newPosZ);
