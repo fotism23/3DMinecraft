@@ -17,7 +17,7 @@ This game was developed as the first assignment for Computer Graphics and Intera
 - Multiple lightning modes.
 
 #Rules.
-- Rules can be found [a text](https://github.com/fotism23/3DMinecraft/blob/master/assignment.pdf "here").
+- Rules can be found [here](https://github.com/fotism23/3DMinecraft/blob/master/assignment.pdf).
 
 # Installation.
 This game was developed in Microsoft VisualStudio Community 2015 v.14.0.25431.01 and is also full compatible with Unix-based or Linux-based systems.
