@@ -3,7 +3,7 @@ A 3D minecraft-type game using OpenGl library implemented in C++.
 
 This game was developed as the first assignment for Computer Graphics and Interactive Systems course.
 
-![Alt text](https://github.com/fotism23/3DMinecraft/blob/master/screenshot.JPG "3DMinecraft")
+![Alt text](https://github.com/fotism23/3DMinecraft/blob/master/preview.PNG "3DMinecraft")
 
 # Programming Structure.
 - Cube struct holding cube information.
