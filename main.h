@@ -43,12 +43,12 @@
 #define ANTI_ALLISING 'i'
 
 //Mouse Parameters.
-#define MOUSE_SENSITIVITY 0.1
+#define MOUSE_SENSITIVITY 0.25
 #define KEYBORAD_SENSITIVITY 5.0
 #define CAMERA_SPEED 0.1
 #define MOUSE_POSITION_X 250;
 #define MOUSE_POSITION_Y 250;
-#define ENABLE_MOUSE_MOVEMENT 0
+#define ENABLE_MOUSE_MOVEMENT 1
 #define LOCK_MOUSE_Y 1
 #define ENABLE_MOUSE_WHEEL 1
 
@@ -143,6 +143,7 @@ void drawSpotLightningMode();
 void drawTorchLightningMode();
 void drawLights();
 void kickCube();
+void resetCamera();
 void restart();
 void renderScene();
 void idle();
@@ -164,6 +165,7 @@ void windowMouseClick(int button, int state, int x, int y);
 void windowMouseMovement(int x, int y);
 void allocateSpace();
 void displayMenu();
+void loadDefaultParameters();
 void initGlut(int *argc, char **argv);
 void initGlutFunctions();
 void initUserInput();

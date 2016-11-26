@@ -67,11 +67,6 @@ void generateRandomColor(float* color) {
 	}
 }
 
-void setPoint(float x, float y, float z) {
-	glTranslatef(0.0f, 0.0f, 0.0f);
-	glTranslatef((GLfloat)x, (GLfloat)y, (GLfloat)z);
-}
-
 void drawGrid() {
 	glPushMatrix();
 	glTranslatef(0.0, 0.0, 0.0);
@@ -198,16 +193,15 @@ void drawCube(float x, float y, float z, float r, float g, float b) {
 void drawCharacter()
 {
 	if (camera == CAMERA_MODE_FPS) return;
-	setPoint(Player.positionX, (int )Player.positionY, Player.positionZ);
+	setPoint(Player.positionX, floor(Player.positionY), Player.positionZ);
 	
-	// Draw body (a 20x20 spherical mesh of radius 0.75 at height 0.75)
-	glColor3f(1.0, 1.0, 1.0); // set drawing color to white
-
 	glPushMatrix();
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(180, 0, 0, 1);
 	glRotatef(Player.eyeDirection, 0, 0, 1);
 
+	// Draw body (a 20x20 spherical mesh of radius 0.75 at height 0.75)
+	glColor3f(0.83f, 0.83f, 0.83f); // set drawing color to white
 	glPushMatrix();
 	glTranslatef(0.0f, 0.0f, 0.3f);
 	glutSolidSphere(0.3, 20, 20);
@@ -218,12 +212,12 @@ void drawCharacter()
 	glTranslatef(0.0f, 0.0f, 0.7f); // position head
 	glutSolidSphere(0.15, 20, 20); // head sphere
 
-	// Draw Eyes (two small black spheres)
-	glColor3f(0.0, 0.0, 0.0); // eyes are black
+	// Draw Eyes (two small grey spheres)
+	glColor3f(0.22f, 0.22f, 0.22f); // eyes are black
 	glPushMatrix();
-	glTranslatef(0.0f, -0.18f, 0.10f); // lift eyes to final position
+	glTranslatef(0.0f, -0.12f, 0.10f); // lift eyes to final position
 	glPushMatrix();
-	glTranslatef(-0.05f, 0.0f, 0.0f);
+	glTranslatef(-0.05f, 0.0f, -0.0f);
 	glutSolidSphere(0.05, 10, 10); // right eye
 	glPopMatrix();
 	glPushMatrix();
@@ -236,7 +230,7 @@ void drawCharacter()
 	glColor3f(1.0, 0.5, 0.5); // nose is orange
 	glPushMatrix();
 	glRotatef(90.0, 1.0, 0.0, 0.0); // rotate to point along -y
-	glutSolidCone(0.08, 0.5, 10, 2); // draw cone
+	glutSolidCone(0.08, 0.3, 10, 2); // draw cone
 	glPopMatrix();
 	glPopMatrix();
 
@@ -255,105 +249,6 @@ void drawLevels() {
 	}
 }
 
-int * calculateNextCubePosition(int currentBoxX, int currentBoxY, int currentBoxZ) {
-	static int r[3];
-
-	if (Player.eyeDirection > -45 && Player.eyeDirection < 45) currentBoxZ--;
-	else if (Player.eyeDirection > 45 && Player.eyeDirection < 135) currentBoxX--;
-	else if (Player.eyeDirection > 135 && Player.eyeDirection < 225) currentBoxZ++;
-	else if (Player.eyeDirection > 225 && Player.eyeDirection < 315) currentBoxX++;
-	else if (Player.eyeDirection == 45 || Player.eyeDirection == -315) { currentBoxX--; currentBoxZ--; }
-	else if (Player.eyeDirection == 135 || Player.eyeDirection == -225) { currentBoxX--; currentBoxZ++; }
-	else if (Player.eyeDirection == 225 || Player.eyeDirection == -135) { currentBoxZ++; currentBoxX++; }
-	else if (Player.eyeDirection == 315 || Player.eyeDirection == -45) { currentBoxX++; currentBoxZ--; }
-	else if (Player.eyeDirection > -360 && Player.eyeDirection < -315) currentBoxZ--;
-	else if (Player.eyeDirection > -315 && Player.eyeDirection < -225) currentBoxX--;
-	else if (Player.eyeDirection > -225 && Player.eyeDirection < -135) currentBoxZ++;
-	else if (Player.eyeDirection > -135 && Player.eyeDirection < -45) currentBoxX++;
-	else if (Player.eyeDirection > 315 && Player.eyeDirection < 360) currentBoxZ--;
-
-	r[0] = currentBoxX;
-	r[1] = currentBoxY;
-	r[2] = currentBoxZ;
-
-	return r;
-}
-
-void setAvailableCubes(Cube *c) {
-	float * color = c->color;
-	if (color[0] == 1.0f && color[1] == 0.0f && color[2] == 0.0f) {
-		c->toGive = 2;
-	}
-	else if (color[0] == 0.0f && color[1] == 1.0f && color[2] == 0.0f) {
-		c->toGive = 3;
-	}
-	else if (color[0] == 0.0f && color[1] == 0.0f && color[2] == 1.0f) {
-		c->toGive = 0;
-	}
-	else if (color[0] == 1.0f && color[1] == 1.0f && color[2] == 0.0f) {
-		c->toGive = 1;
-	}
-}
-
-void addCube() {
-	if (Player.availableCubes == 0) return;
-	int * point = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
-
-	while (1) {
-		if (!cubes[point[0]][point[1]][point[2]].exists) break;
-		if (point[1] == N) return;
-		point[1]++;
-	}
-	Player.availableCubes--;
-	generateRandomColor(cubes[point[0]][point[1]][point[2]].color);
-	cubes[point[0]][point[1]][point[2]].exists = true;
-	cubes[point[0]][point[1]][point[2]].canBreak = true;
-	setAvailableCubes(&cubes[point[0]][point[1]][point[2]]);
-	Player.score += 5;
-}
-
-void removeCube(int _all) {
-	int * point = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
-
-	if (!_all) {
-		if (Player.score < 20) return;
-		cubes[point[0]][point[1]][point[2]].exists = false;
-	}
-	else {
-		if (Player.score < 20) return;
-		for (int i = 0; i < N; i++) {
-			cubes[point[0]][i][point[2]].exists = false;
-		}
-		Player.score -= 20;
-		Player.lives++;
-	}
-}
-
-void getAvailabeCubes() {
-	if (Player.score < 5) return;
-	Cube *c = &cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ];
-	if (c->toGive == 0) return;
-	Player.availableCubes++;
-	c->toGive--;
-	if (c->toGive == 0) {
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 0.0f;
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 0.0f;
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 1.0f;
-	}
-	else if (c->toGive == 1) {
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 1.0f;
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 1.0f;
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 0.0f;
-	}
-	else if (c->toGive == 2) {
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 1.0f;
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 0.0f;
-		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 0.0f;
-	}
-	Player.score -= 5;
-
-}
-
 void drawScore() {
 	if (lightning != 0) glDisable(GL_LIGHTING);
 	std::ostringstream oss;
@@ -369,18 +264,7 @@ void drawScore() {
 	std::string s = oss.str();
 
 	int length = s.length();
-	/*
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glBegin(GL_QUADS);
-	glColor3f(0, 0, 0);
-	glVertex3f(0, 0, 0);
-	glVertex3f(50, 0, 0);
-	glVertex3f(0, 50, 0);
-	glVertex3f(50, 50, 0);
-	glEnd();
-	//glPopMatrix();
-	*/
+	
 	glColor3f(0, 1, 0);
 	glMatrixMode(GL_PROJECTION);
 	double matrix[16];
@@ -418,10 +302,10 @@ void drawSpotLightningMode() {
 }
 
 void drawTorchLightningMode() {
-	flashlight.position[0] = Player.positionX + 1;
+	flashlight.position[0] = Player.positionX;
 	flashlight.position[1] = 0;
-	flashlight.position[2] = Player.positionZ +- 1;
-	flashlight.position[3] = 0.0;
+	flashlight.position[2] = Player.positionZ;
+	flashlight.position[3] = 0.0f;
 
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, whiteLight);
 	glEnable(GL_LIGHT0);
@@ -449,6 +333,116 @@ void drawLights() {
 		drawTorchLightningMode();
 	}
 	else glDisable(GL_LIGHTING);
+}
+
+void setPoint(float x, float y, float z) {
+	glTranslatef(0.0f, 0.0f, 0.0f);
+	glTranslatef((GLfloat)x, (GLfloat)y, (GLfloat)z);
+}
+
+int * calculateNextCubePosition(int currentBoxX, int currentBoxY, int currentBoxZ) {
+	static int r[3];
+
+	if (Player.eyeDirection > -45 && Player.eyeDirection < 45) currentBoxZ--;
+	else if (Player.eyeDirection > 45 && Player.eyeDirection < 135) currentBoxX--;
+	else if (Player.eyeDirection > 135 && Player.eyeDirection < 225) currentBoxZ++;
+	else if (Player.eyeDirection > 225 && Player.eyeDirection < 315) currentBoxX++;
+	else if (Player.eyeDirection == 45 || Player.eyeDirection == -315) { currentBoxX--; currentBoxZ--; }
+	else if (Player.eyeDirection == 135 || Player.eyeDirection == -225) { currentBoxX--; currentBoxZ++; }
+	else if (Player.eyeDirection == 225 || Player.eyeDirection == -135) { currentBoxZ++; currentBoxX++; }
+	else if (Player.eyeDirection == 315 || Player.eyeDirection == -45) { currentBoxX++; currentBoxZ--; }
+	else if (Player.eyeDirection > -360 && Player.eyeDirection < -315) currentBoxZ--;
+	else if (Player.eyeDirection > -315 && Player.eyeDirection < -225) currentBoxX--;
+	else if (Player.eyeDirection > -225 && Player.eyeDirection < -135) currentBoxZ++;
+	else if (Player.eyeDirection > -135 && Player.eyeDirection < -45) currentBoxX++;
+	else if (Player.eyeDirection > 315 && Player.eyeDirection < 360) currentBoxZ--;
+
+	r[0] = currentBoxX;
+	r[1] = currentBoxY;
+	r[2] = currentBoxZ;
+
+	return r;
+}
+
+void resetCamera() {
+	if (camera == CAMERA_MODE_TPS) {
+		switchCamera();
+		Camera = CCamera();
+		Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
+		switchCamera();
+	}
+	else {
+		Camera = CCamera();
+		Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
+	}
+}
+
+void restart() {
+	Player.positionX = (float)round(N / 2);
+	Player.positionZ = (float)round(N / 2);
+	Player.positionY = 1.5f;
+	Player.eyeDirection = 0.0f;
+	resetCamera();
+}
+
+void gameOver() {
+	if (Player.lives == 1) {
+		Player.gameOver = true;
+		exit(1);
+	}
+	Player.lives--;
+	restart();
+	windowDisplay();
+}
+
+void fall(float newPosX, float newPosY, float newPosZ) {
+	int fallTo = 0;
+
+	for (int i = (int)newPosY; i >= 0; i--) {
+		if (cubes[(int)newPosX][i][(int)newPosZ].exists) {
+			fallTo = i + 1;
+			break;
+		}
+	}
+	float drop = newPosY - (float)fallTo;
+	int pointFactor = (int)abs(drop) - 1;
+	Player.score -= (pointFactor * 5);
+	Camera.Move(F3dVector(0.0f, -drop, 0.0f));
+	Player.positionY = (float)fallTo;
+	if (Player.positionY == 0) gameOver();
+}
+
+int climb(float newPosX, float newPosY, float newPosZ) {
+	int count = 0;
+	int climbTo = -1;
+
+	for (int i = (int)newPosY; i < N; i++) {
+		if (cubes[(int)newPosX][i][(int)newPosZ].exists) count++;
+		else {
+			climbTo = i;
+			break;
+		}
+	}
+	if (count == 2) return false;
+	Camera.Move(F3dVector(0.0f, 1.0f, 0.0f));
+	Player.positionY = (float)climbTo;
+	Player.score += 5;
+	if (Player.positionY == N - 1) {
+		Player.score += 100;
+		Player.lives++;
+	}
+	return false;
+}
+
+int checkMove(float newPosX, float newPosY, float newPosZ) {
+	if (newPosX > N || newPosX < 0 || newPosZ > N || newPosZ < 0) return false; //Prevents Player to move outside the grid
+	if (cubes[(int)newPosX][(int)newPosY][(int)newPosZ].exists) {
+		return climb(newPosX, newPosY, newPosZ);
+	}
+	if (!cubes[(int)newPosX][(int)newPosY - 1][(int)newPosZ].exists) {
+		fall(newPosX, newPosY, newPosZ);
+	}
+	return true;
 }
 
 void kickCube() {
@@ -517,76 +511,9 @@ void kickCube() {
 	cubes[current[0]][current[1]][current[2]].exists = false;
 }
 
-void restart() {
-	Player.positionX = (float)round(N / 2);
-	Player.positionZ = (float)round(N / 2);
-	Player.positionY = 1.5f;
-	Player.eyeDirection = 0.0f;
-	Camera = CCamera();
-	Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
-	//Camera.RotateY(-90);
-}
-
-void gameOver() {
-	if (Player.lives == 1) {
-		Player.gameOver = true;
-		exit(1);
-	}
-	Player.lives--;
-	restart();
-	windowDisplay();
-}
-
-void fall(float newPosX, float newPosY, float newPosZ) {
-	int fallTo = 0;
-	for (int i = (int)newPosY; i >= 0; i--) {
-		if (cubes[(int)newPosX][i][(int)newPosZ].exists) {
-			fallTo = i + 1;
-			break;
-		}
-	}
-	float drop = newPosY - (float)fallTo;
-	int pointFactor = (int)abs(drop) - 1;
-	Player.score -= (pointFactor * 5);
-	Camera.Move(F3dVector(0.0f, -drop, 0.0f));
-	Player.positionY = (float)fallTo;
-	if (Player.positionY == 0) gameOver();
-}
-
-int climb(float newPosX, float newPosY, float newPosZ) {
-	int count = 0;
-	int climbTo = -1;
-	for (int i = (int)newPosY; i < N; i++) {
-		if (cubes[(int)newPosX][i][(int)newPosZ].exists) count++;
-		else {
-			climbTo = i;
-			break;
-		}
-	}
-	if (count == 2) return false;
-	Camera.Move(F3dVector(0.0f, 1.0f, 0.0f));
-	Player.positionY = (float)climbTo;
-	Player.score += 5;
-	if (Player.positionY == N - 1) {
-		Player.score += 100;
-		Player.lives++;
-	}
-	return false;
-}
-
-int checkMove(float newPosX, float newPosY, float newPosZ) {
-	if (newPosX > N || newPosX < 0 || newPosZ > N || newPosZ < 0) return false; //Prevents Player to move outside the grid
-	if (cubes[(int)newPosX][(int)newPosY][(int)newPosZ].exists) {
-		return climb(newPosX, newPosY, newPosZ);
-	}
-	if (!cubes[(int)newPosX][(int)newPosY - 1][(int)newPosZ].exists) {
-		fall(newPosX, newPosY, newPosZ);
-	}
-	return true;
-}
-
 void dropCubes() {
 	int flag = false;
+
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			for (int k = N - 1; k >= 1; k--) {
@@ -605,6 +532,81 @@ void dropCubes() {
 	}
 	if (flag) Player.score += 10;
 	animateDrop = false;
+}
+
+void addCube() {
+	if (Player.availableCubes == 0) return;
+	int * point = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
+
+	while (1) {
+		if (!cubes[point[0]][point[1]][point[2]].exists) break;
+		if (point[1] == N) return;
+		point[1]++;
+	}
+	Player.availableCubes--;
+	generateRandomColor(cubes[point[0]][point[1]][point[2]].color);
+	cubes[point[0]][point[1]][point[2]].exists = true;
+	cubes[point[0]][point[1]][point[2]].canBreak = true;
+	setAvailableCubes(&cubes[point[0]][point[1]][point[2]]);
+	Player.score += 5;
+}
+
+void removeCube(int _all) {
+	int * point = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY, (int)Player.positionZ);
+
+	if (!_all) {
+		if (Player.score < 20) return;
+		cubes[point[0]][point[1]][point[2]].exists = false;
+	}
+	else {
+		if (Player.score < 20) return;
+		for (int i = 0; i < N; i++) {
+			cubes[point[0]][i][point[2]].exists = false;
+		}
+		Player.score -= 20;
+		Player.lives++;
+	}
+}
+
+void setAvailableCubes(Cube *c) {
+	float * color = c->color;
+	if (color[0] == 1.0f && color[1] == 0.0f && color[2] == 0.0f) {
+		c->toGive = 2;
+	}
+	else if (color[0] == 0.0f && color[1] == 1.0f && color[2] == 0.0f) {
+		c->toGive = 3;
+	}
+	else if (color[0] == 0.0f && color[1] == 0.0f && color[2] == 1.0f) {
+		c->toGive = 0;
+	}
+	else if (color[0] == 1.0f && color[1] == 1.0f && color[2] == 0.0f) {
+		c->toGive = 1;
+	}
+}
+
+void getAvailabeCubes() {
+	if (Player.score < 5) return;
+	Cube *c = &cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ];
+	if (c->toGive == 0) return;
+	Player.availableCubes++;
+	c->toGive--;
+	if (c->toGive == 0) {
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 0.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 0.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 1.0f;
+	}
+	else if (c->toGive == 1) {
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 1.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 1.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 0.0f;
+	}
+	else if (c->toGive == 2) {
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[0] = 1.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[1] = 0.0f;
+		cubes[(int)Player.positionX][(int)Player.positionY - 1][(int)Player.positionZ].color[2] = 0.0f;
+	}
+	Player.score -= 5;
+
 }
 
 void switchLight() {
@@ -633,73 +635,6 @@ void switchCamera() {
 void antiAllising() {
 	if (mssa) glEnable(GLUT_MULTISAMPLE);
 	else glDisable(GLUT_MULTISAMPLE);
-}
-
-void initFirstLevelCubeColors() {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			generateRandomColor(cubes[i][0][j].color);
-			cubes[i][0][j].exists = true;
-			cubes[i][0][j].canBreak = true;
-			setAvailableCubes(&cubes[i][0][j]);
-		}
-	}
-	int center = (int)round(N / 2.0);
-	cubes[center][0][center].color[0] = 1.0f;
-	cubes[center][0][center].color[1] = 0.0f;
-	cubes[center][0][center].color[2] = 1.0f;
-	cubes[center][0][center].exists = true;
-	cubes[center][0][center].canBreak = false;
-	cubes[center][0][center].toGive = 0;
-}
-
-void initPlayer() {
-	Player.lives = STARTING_LIVES;
-	Player.gameOver = false;
-	Player.score = STARTING_SCORE;
-	Player.positionX = (float)round(N / 2);
-	Player.positionZ = (float)round(N / 2);
-	Player.positionY = 1.5f;
-	Player.eyeDirection = 0.0f;
-}
-
-void initGame() {
-	initLights();
-	initFirstLevelCubeColors();
-	Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
-}
-
-void initLights() {
-
-	spotlights[0][0] = (GLfloat)N;
-	spotlights[0][1] = (GLfloat)N;
-	spotlights[0][2] = (GLfloat)N;
-	spotlights[0][3] = 1.0f;
-
-	spotlights[1][0] = 0.0f;
-	spotlights[1][1] = (GLfloat)N;
-	spotlights[1][2] = (GLfloat)N;
-	spotlights[1][3] = 1.0f;
-
-	spotlights[2][0] = (GLfloat)N;
-	spotlights[2][1] = (GLfloat)N;
-	spotlights[2][2] = 0.0f;
-	spotlights[2][3] = 1.0f;
-
-	spotlights[3][0] = 0.0f;
-	spotlights[3][1] = (GLfloat)N;
-	spotlights[3][2] = 0.0f;
-	spotlights[3][3] = 1.0f;
-}
-
-void initGl() {
-	glClearColor(0, 0, 0, 1);
-	glClearDepth(5.0);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_NORMALIZE);
-	glEnable(GL_COLOR_MATERIAL);
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);
 }
 
 void renderScene() {
@@ -745,7 +680,6 @@ void windowKey(unsigned char key, int x, int y) {
 		exit(1);
 		break;
 	case MOVE_LEFT:
-	
 		if (camera == CAMERA_MODE_FPS) {
 			Player.eyeDirection += KEYBORAD_SENSITIVITY;
 			Camera.RotateY((GLfloat)KEYBORAD_SENSITIVITY);
@@ -785,7 +719,6 @@ void windowKey(unsigned char key, int x, int y) {
 			Player.positionY,
 			Player.positionZ + (float)cos(angle) * (float)CAMERA_SPEED))
 		{
-			//Camera.MoveForwards((GLfloat)CAMERA_SPEED);
 			Player.positionX += (float)sin(angle) * (float)CAMERA_SPEED;
 			Player.positionZ += (float)cos(angle) * (float)CAMERA_SPEED;
 			Camera.Move(F3dVector((float)sin(angle) * (float)CAMERA_SPEED, 0, (float)cos(angle) * (float)CAMERA_SPEED));
@@ -841,12 +774,29 @@ void windowMouseClick(int button, int state, int x, int y) {
 
 void windowMouseMovement(int x, int y) {
 	if (x < mousePositionX) {
-		Camera.RotateY((GLfloat)MOUSE_SENSITIVITY);
-		Player.eyeDirection += (GLfloat)MOUSE_SENSITIVITY;
+		if (camera == CAMERA_MODE_FPS) {
+			Player.eyeDirection += MOUSE_SENSITIVITY;
+			Camera.RotateY((GLfloat)MOUSE_SENSITIVITY);
+		}
+		else {
+			Player.eyeDirection += MOUSE_SENSITIVITY;
+			Camera.Orbit((GLfloat)Player.eyeDirection, MOUSE_SENSITIVITY, Player.positionX, Player.positionZ);
+		}
+		if (Player.eyeDirection == 360 || Player.eyeDirection == -360) Player.eyeDirection = 0;
+		angle = (float)(Player.eyeDirection * PI) / 180.0f;
 	}
 	else {
-		Camera.RotateY((GLfloat)-MOUSE_SENSITIVITY);
-		Player.eyeDirection -= (GLfloat)MOUSE_SENSITIVITY;
+		if (camera == CAMERA_MODE_FPS) {
+			Player.eyeDirection -= MOUSE_SENSITIVITY;
+			Camera.RotateY((GLfloat)-MOUSE_SENSITIVITY);
+		}
+		else {
+			Player.eyeDirection -= MOUSE_SENSITIVITY;
+			Camera.Orbit((GLfloat)Player.eyeDirection, -MOUSE_SENSITIVITY, Player.positionX, Player.positionZ);
+		}
+
+		if (Player.eyeDirection == 360 || Player.eyeDirection == -360) Player.eyeDirection = 0;
+		angle = (float)(Player.eyeDirection * PI) / 180.0f;
 	}
 	if (y < mousePositionY && !LOCK_MOUSE_Y) {
 		Camera.RotateX((GLfloat)MOUSE_SENSITIVITY);
@@ -861,6 +811,7 @@ void windowMouseMovement(int x, int y) {
 
 void allocateSpace() {
 	cubes = (Cube ***)malloc(N * sizeof(Cube **));
+
 	if (cubes == NULL) {
 		printf("Error\n");
 		exit(0);
@@ -883,6 +834,7 @@ void allocateSpace() {
 			}
 		}
 	}
+
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
@@ -898,24 +850,49 @@ void allocateSpace() {
 
 void displayMenu() {
 	char input[10];
+
 	puts("Give grid size: ");
 	fgets(input, 10, stdin);
+
 	int size = atoi(input);
 	printf("Selected size : %d\n", size);
 	puts("Enable debug? [y/n] :");
+	
 	while (1) {
 		fgets(input, 10, stdin);
 		if (input[0] == 'y' || input[0] == 'n') break;
 	}
+
 	if (input[0] == 'y') DEBUG = 1;
 	N = size;
+}
+
+void loadDefaultParameters() {
+	lightning = 0;
+	animateDrop = false;
+	DEBUG = 0;
+	mssa = 1;
+	camera = CAMERA_MODE_FPS;
+	mousePositionX = MOUSE_POSITION_X;
+	mousePositionY = MOUSE_POSITION_Y;
+	fov = FOV;
+}
+
+void initGl() {
+	glClearColor(0.56f, 0.66f, 0.82f, 1);
+	glClearDepth(5.0);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_COLOR_MATERIAL);
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void initGlut(int *argc, char **argv) {
 	glutInit(argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-	glutCreateWindow("Assignment1");
+	glutCreateWindow("Fotis Mitropoulos 2486 Assignment1");
 }
 
 void initGlutFunctions() {
@@ -930,15 +907,60 @@ void initUserInput() {
 	if (ENABLE_MOUSE_MOVEMENT) glutPassiveMotionFunc(&windowMouseMovement);
 }
 
-void loadDefaultParameters() {
-	lightning = 0;
-	animateDrop = false;
-	DEBUG = 0;
-	mssa = 1;
-	camera = CAMERA_MODE_FPS;
-	mousePositionX = MOUSE_POSITION_X;
-	mousePositionY = MOUSE_POSITION_Y;
-	fov = FOV;
+void initLights() {
+	spotlights[0][0] = (GLfloat)N;
+	spotlights[0][1] = (GLfloat)N;
+	spotlights[0][2] = (GLfloat)N;
+	spotlights[0][3] = 1.0f;
+
+	spotlights[1][0] = 0.0f;
+	spotlights[1][1] = (GLfloat)N;
+	spotlights[1][2] = (GLfloat)N;
+	spotlights[1][3] = 1.0f;
+
+	spotlights[2][0] = (GLfloat)N;
+	spotlights[2][1] = (GLfloat)N;
+	spotlights[2][2] = 0.0f;
+	spotlights[2][3] = 1.0f;
+
+	spotlights[3][0] = 0.0f;
+	spotlights[3][1] = (GLfloat)N;
+	spotlights[3][2] = 0.0f;
+	spotlights[3][3] = 1.0f;
+}
+
+void initPlayer() {
+	Player.lives = STARTING_LIVES;
+	Player.gameOver = false;
+	Player.score = STARTING_SCORE;
+	Player.positionX = (float)round(N / 2);
+	Player.positionZ = (float)round(N / 2);
+	Player.positionY = 1.5f;
+	Player.eyeDirection = 0.0f;
+}
+
+void initGame() {
+	initLights();
+	initFirstLevelCubeColors();
+	Camera.Move(F3dVector(Player.positionX, Player.positionY, Player.positionZ));
+}
+
+void initFirstLevelCubeColors() {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			generateRandomColor(cubes[i][0][j].color);
+			cubes[i][0][j].exists = true;
+			cubes[i][0][j].canBreak = true;
+			setAvailableCubes(&cubes[i][0][j]);
+		}
+	}
+	int center = (int)round(N / 2.0);
+	cubes[center][0][center].color[0] = 1.0f;
+	cubes[center][0][center].color[1] = 0.0f;
+	cubes[center][0][center].color[2] = 1.0f;
+	cubes[center][0][center].exists = true;
+	cubes[center][0][center].canBreak = false;
+	cubes[center][0][center].toGive = 0;
 }
 
 int main(int argc, char **argv) {
