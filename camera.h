@@ -2,6 +2,8 @@
 #define PI 3.1415265359
 #define PIdiv180 3.1415265359/180.0
 
+#define CAMERA_RADIUS 2
+
 /////////////////////////////////
 //Note: All angles in degrees  //
 /////////////////////////////////
@@ -29,7 +31,7 @@ public:
 	CCamera();				//inits the values (Position: (0|0|0) Target: (0|0|-1) )
 	void Render ( void );	//executes some glRotates and a glTranslate command
 							//Note: You should call glLoadIdentity before using Render
-	void FLashLightRender(void);
+	void Orbit( GLfloat Angle, GLfloat offset, GLfloat positionX, GLfloat positionZ);
 	void Move ( SF3dVector Direction );
 	void RotateX ( GLfloat Angle );
 	void RotateY ( GLfloat Angle );

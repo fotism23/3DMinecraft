@@ -72,8 +72,10 @@ void CCamera::Render( void ){
 	glTranslatef( -Position.x, -Position.y, -Position.z );
 }
 
-void CCamera::FLashLightRender(void) {
-
+void CCamera::Orbit(GLfloat Angle, GLfloat offset, GLfloat positionX, GLfloat positionZ) {
+	Position.z = (CAMERA_RADIUS * cos((Angle)* PI / 180)) + positionZ;
+	Position.x = (CAMERA_RADIUS * sin((Angle)* PI / 180)) + positionX;
+	RotateY(offset);
 }
 
 void CCamera::MoveForwards( GLfloat Distance ){

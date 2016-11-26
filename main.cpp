@@ -1,7 +1,7 @@
 #include "main.h"
 
 void debug() {
-	if (!DEBUG) return;
+	if (DEBUG) return;
 	int currentBoxX = (int)Player.positionX;
 	int currentBoxY = (int)Player.positionY;
 	int currentBoxZ = (int)Player.positionZ;
@@ -9,6 +9,7 @@ void debug() {
 	printf("Player Position : X : %f, Y : %f, Z : %f\n", Player.positionX, Player.positionY, Player.positionZ);
 	printf("Player Eye Direction : %f\n", Player.eyeDirection);
 	printf("Lightning %d\n", lightning);
+	printf("Camera %d\n", camera);
 	printf("Anti Allising %d\n", mssa);
 }
 
@@ -205,6 +206,7 @@ void drawCharacter()
 	glPushMatrix();
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(180, 0, 0, 1);
+	glRotatef(Player.eyeDirection, 0, 0, 1);
 
 	glPushMatrix();
 	glTranslatef(0.0f, 0.0f, 0.3f);
@@ -743,14 +745,28 @@ void windowKey(unsigned char key, int x, int y) {
 		exit(1);
 		break;
 	case MOVE_LEFT:
-		Camera.RotateY((GLfloat)KEYBORAD_SENSITIVITY);
-		Player.eyeDirection += KEYBORAD_SENSITIVITY;
+	
+		if (camera == CAMERA_MODE_FPS) {
+			Player.eyeDirection += KEYBORAD_SENSITIVITY;
+			Camera.RotateY((GLfloat)KEYBORAD_SENSITIVITY);
+		}
+		else {
+			Player.eyeDirection += KEYBORAD_SENSITIVITY;
+			Camera.Orbit((GLfloat)Player.eyeDirection, KEYBORAD_SENSITIVITY, Player.positionX, Player.positionZ);
+		}
 		if (Player.eyeDirection == 360 || Player.eyeDirection == -360) Player.eyeDirection = 0;
 		angle = (float)(Player.eyeDirection * PI) / 180.0f;
 		break;
 	case MOVE_RIGHT:
-		Camera.RotateY((GLfloat)-KEYBORAD_SENSITIVITY);
-		Player.eyeDirection -= KEYBORAD_SENSITIVITY;
+		if (camera == CAMERA_MODE_FPS) { 
+			Player.eyeDirection -= KEYBORAD_SENSITIVITY;
+			Camera.RotateY((GLfloat)-KEYBORAD_SENSITIVITY);
+		}
+		else {
+			Player.eyeDirection -= KEYBORAD_SENSITIVITY;
+			Camera.Orbit((GLfloat)Player.eyeDirection, -KEYBORAD_SENSITIVITY, Player.positionX, Player.positionZ);
+		}
+		
 		if (Player.eyeDirection == 360 || Player.eyeDirection == -360) Player.eyeDirection = 0;
 		angle = (float)(Player.eyeDirection * PI) / 180.0f;
 		break;
@@ -759,7 +775,6 @@ void windowKey(unsigned char key, int x, int y) {
 			Player.positionY,
 			Player.positionZ - (float)cos(angle) * (float)CAMERA_SPEED))
 		{
-			//Camera.MoveForwards((GLfloat)-CAMERA_SPEED);
 			Player.positionX -= (float)sin(angle) * (float)CAMERA_SPEED;
 			Player.positionZ -= (float)cos(angle) * (float)CAMERA_SPEED;
 			Camera.Move(F3dVector(-(float)sin(angle) * (float)CAMERA_SPEED, 0, -(float)cos(angle) * (float)CAMERA_SPEED));
