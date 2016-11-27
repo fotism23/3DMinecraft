@@ -3,7 +3,10 @@ A 3D minecraft-type game using OpenGl library implemented in C++.
 
 This game was developed as the first assignment for the undergraduate couse Computer Graphics and Interactive Systems of the Department of Computer Science and Engineering at the University of Ioannina.
 
-![Alt text](https://github.com/fotism23/3DMinecraft/blob/master/preview.PNG "3DMinecraft")
+![Alt text](D:\preview.PNG "3DMinecraft")
+
+# Student information
+Fotios Mitropoulos 2486
 
 # Programming Structure.
 - Cube struct holding cube information.
@@ -17,7 +20,7 @@ This game was developed as the first assignment for the undergraduate couse Comp
 - Multiple lightning modes.
 
 #Rules.
-- Rules can be found [here](https://github.com/fotism23/3DMinecraft/blob/master/assignment.pdf).
+Rules can be found [here](https://github.com/fotism23/3DMinecraft/blob/master/assignment.pdf).
 
 # Installation.
 This game was developed in Microsoft VisualStudio Community 2015 v.14.0.25431.01 and is also full compatible with Unix-based or Linux-based systems.
@@ -38,7 +41,7 @@ Make sure that the working directory is the project's directory and run the foll
 # How to play.
 
 Keyboard functions.
-- Esc 		        : exit program
+- Esc 		          : exit program
 - a                 : move forwards
 - s                 : move backwards
 - a                 : rotate camera counter-clockwise
@@ -59,3 +62,7 @@ Mouse functions.
 - Left Click                : add cube in front
 - Right Click               : cick cube
 
+# Contact
+Feel free to contact me for any reason.  
+- Personal email  : fotismitropoulos@gmail.com  
+- Academic email  : cse32486@cs.uoi.gr  
