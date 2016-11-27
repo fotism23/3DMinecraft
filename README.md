@@ -3,7 +3,7 @@ A 3D minecraft-type game using OpenGl library implemented in C++.
 
 This game was developed as the first assignment for the undergraduate couse Computer Graphics and Interactive Systems of the Department of Computer Science and Engineering at the University of Ioannina.
 
-![Alt text](D:\preview.PNG "3DMinecraft")
+![Alt text](https://github.com/fotism23/3DMinecraft/blob/master/preview.PNG "3DMinecraft")
 
 # Student information
 Fotios Mitropoulos 2486
