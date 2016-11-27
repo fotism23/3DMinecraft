@@ -302,20 +302,22 @@ void drawSpotLightningMode() {
 }
 
 void drawTorchLightningMode() {
-	flashlight.position[0] = Player.positionX;
+	flashlight.position[0] = Player.positionX - 1;
 	flashlight.position[1] = 0;
-	flashlight.position[2] = Player.positionZ;
+	flashlight.position[2] = Player.positionZ - 1;
 	flashlight.position[3] = 0.0f;
 
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, whiteLight);
+	glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, sourceLight);
 	glEnable(GL_LIGHT0);
+
+	//float attenuation = 1.0 / (0.1 + 1.0 * pow(4, 2));
 
 	glLightfv(GL_LIGHT0, GL_POSITION, flashlight.position);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
 	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 25.0);
-	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.1f);
+	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, -2.0);
 }
 
 void drawLights() {
