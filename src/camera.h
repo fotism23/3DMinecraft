@@ -1,36 +1,40 @@
-#include <GL/glut.h>		// Need to include it here because the GL* types are required.
+#include <GL/glut.h>	
+#include "math.h"
+#include <iostream>
+
 #define PI 3.1415265359
 #define PIdiv180 3.1415265359/180.0
 
 #define CAMERA_RADIUS 2
 
-/////////////////////////////////
-//Note: All angles in degrees  //
-/////////////////////////////////
+//Note: All angles in degrees
 
-struct SF3dVector  //Float 3d-vect, normally used.
-{
+struct SF3dVector {
 	GLfloat x,y,z;
 };
-struct SF2dVector
-{
+
+struct SF2dVector {
 	GLfloat x,y;
 };
 
-class CCamera
-{
+class CCamera {
 private:
 	SF3dVector Position;
-	SF3dVector ViewDir;		/*Not used for rendering the camera, but for "moveforwards"
-							So it is not necessary to "actualize" it always. It is only
-							actualized when ViewDirChanged is true and moveforwards is called*/
+	/*
+	Not used for rendering the camera, but for "moveforwards"
+	So it is not necessary to "actualize" it always. It is only
+	actualized when ViewDirChanged is true and moveforwards is called
+	*/
+	SF3dVector ViewDir;		
 	bool ViewDirChanged;
 	GLfloat RotatedX, RotatedY, RotatedZ;	
 	void GetViewDir ( void );
 public:
-	CCamera();				//inits the values (Position: (0|0|0) Target: (0|0|-1) )
-	void Render ( void );	//executes some glRotates and a glTranslate command
-							//Note: You should call glLoadIdentity before using Render
+	//inits the values (Position: (0|0|0) Target: (0|0|-1) )
+	CCamera();
+	void Render ( void );	
+	//executes some glRotates and a glTranslate command
+	//Note: You should call glLoadIdentity before using Render
 	void Orbit( GLfloat Angle, GLfloat offset, GLfloat positionX, GLfloat positionZ);
 	void Move ( SF3dVector Direction );
 	void RotateX ( GLfloat Angle );

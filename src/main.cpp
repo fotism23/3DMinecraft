@@ -310,8 +310,6 @@ void drawTorchLightningMode() {
 	glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, sourceLight);
 	glEnable(GL_LIGHT0);
 
-	//float attenuation = 1.0 / (0.1 + 1.0 * pow(4, 2));
-
 	glLightfv(GL_LIGHT0, GL_POSITION, flashlight.position);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
@@ -652,7 +650,7 @@ void idle() {
 	calculateFPS();
 }
 
-void windowDisplay() {
+void windowDisplay( void ) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	Camera.Render();
