@@ -200,14 +200,14 @@ void drawCharacter()
 	glRotatef(180, 0, 0, 1);
 	glRotatef(Player.eyeDirection, 0, 0, 1);
 
-	// Draw body (a 20x20 spherical mesh of radius 0.75 at height 0.75)
+	// Draw body (a 20x20 spherical mesh of radius 0.3)
 	glColor3f(0.83f, 0.83f, 0.83f); // set drawing color to white
 	glPushMatrix();
 	glTranslatef(0.0f, 0.0f, 0.3f);
 	glutSolidSphere(0.3, 20, 20);
 	glPopMatrix();
 
-	// Draw the head (a sphere of radius 0.25 at height 1.75)
+	// Draw the head (a sphere of radius 0.15)
 	glPushMatrix();
 	glTranslatef(0.0f, 0.0f, 0.7f); // position head
 	glutSolidSphere(0.15, 20, 20); // head sphere
@@ -340,6 +340,7 @@ void setPoint(float x, float y, float z) {
 	glTranslatef((GLfloat)x, (GLfloat)y, (GLfloat)z);
 }
 
+//Returns the next squere in front of the player
 int * calculateNextCubePosition(int currentBoxX, int currentBoxY, int currentBoxZ) {
 	static int r[3];
 
@@ -377,6 +378,7 @@ void resetCamera() {
 	}
 }
 
+//Returns the player to the initial position
 void restart() {
 	Player.positionX = (float)round(N / 2);
 	Player.positionZ = (float)round(N / 2);
@@ -385,6 +387,7 @@ void restart() {
 	resetCamera();
 }
 
+//Called every time the player falls into the void
 void gameOver() {
 	if (Player.lives == 1) {
 		Player.gameOver = true;
@@ -643,7 +646,6 @@ void renderScene() {
 	drawCharacter();
 	drawScore();
 	drawLights();
-	
 }
 
 void idle() {
@@ -809,6 +811,7 @@ void windowMouseMovement(int x, int y) {
 	mousePositionY = y;
 }
 
+//Allocates dynamically space for the 3 dimensional grid
 void allocateSpace() {
 	cubes = (Cube ***)malloc(N * sizeof(Cube **));
 
