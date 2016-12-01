@@ -40,6 +40,7 @@ public:
 	void RotateX ( GLfloat Angle );
 	void RotateY ( GLfloat Angle );
 	void MoveForwards ( GLfloat Distance );
+	SF3dVector getViewDirection();
 };
 
 SF3dVector F3dVector ( GLfloat x, GLfloat y, GLfloat z );

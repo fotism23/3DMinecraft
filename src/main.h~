@@ -41,8 +41,6 @@
 #define SWITCH_CAMERA 'c'
 #define KEY_ESC 27
 #define ANTI_ALLISING 'i'
-#define SWITCH_CHARACTER 'm'
-#define JUMP 'j'
 
 //Mouse Parameters.
 #define MOUSE_SENSITIVITY 0.25
@@ -61,8 +59,6 @@
 #define SPOT_LIGHTNING_MODE 1
 #define TORCH_LIGHTNING_MODE 2
 #define FOV 50
-#define HUMAN_MODEL 1
-#define SNOWMAN_MODEL 2
 
 //Player Parameters.
 #define STARTING_LIVES 3
@@ -122,9 +118,6 @@ int camera;
 int mousePositionX;
 int mousePositionY;
 float fov;
-int character;
-int animationState;
-int animationDirection;
 
 //FPS Declarations.
 float frameCount = 0;
@@ -142,10 +135,6 @@ void drawCube(float x, float y, float z, float r, float g, float b);
 void drawLevels();
 void setAvailableCubes(Cube *c);
 void addCube();
-void switchCharacter();
-void drawSnowman();
-void toggleAnimation(int _dir);
-void drawHuman();
 void drawCharacter();
 void removeCube(int _all);
 void getAvailabeCubes();
@@ -161,7 +150,6 @@ void idle();
 void windowDisplay();
 void gameOver();
 void fall(float newPosX, float newPosY, float newPosZ);
-void jump();
 void dropCubes();
 void switchLight();
 void switchCamera();
@@ -181,7 +169,6 @@ void loadDefaultParameters();
 void initGlut(int *argc, char **argv);
 void initGlutFunctions();
 void initUserInput();
-int getRotation();
 int * calculateNextCubePosition(int currentBoxX, int currentBoxY, int currentBoxZ);
 int climb(float newPosX, float newPosY, float newPosZ);
 int checkMove(float newPosX, float newPosY, float newPosZ);

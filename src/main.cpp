@@ -11,6 +11,8 @@ void debug() {
 	printf("Lightning %d\n", lightning);
 	printf("Camera %d\n", camera);
 	printf("Anti Allising %d\n", mssa);
+	printf("Character %d\n", character);
+	printf("Animation State %d\n", animationState);
 }
 
 void calculateFPS() {
@@ -83,6 +85,16 @@ void drawGrid() {
 }
 
 void drawCube(float x, float y, float z, float r, float g, float b) {
+	/*
+	glPushMatrix();
+	setPoint(x, y, z);
+	glColor3f(r, g, b);
+	glutSolidCube(1.0);
+	glColor3f(0.0, 0.0, 0.0);
+	glutWireCube(1.0);
+	glPopMatrix();
+	*/
+
 	glPushMatrix();
 	setPoint(x, y, z);
 	//Draw edges for the cube.
@@ -188,31 +200,36 @@ void drawCube(float x, float y, float z, float r, float g, float b) {
 	glVertex3f(0.0f, 1.0f, -0.0f);
 	glEnd();
 	glPopMatrix();
+
 }
 
-void drawCharacter()
-{
+void switchCharacter() {
 	if (camera == CAMERA_MODE_FPS) return;
+	if (character == HUMAN_MODEL) character = SNOWMAN_MODEL;
+	else character = HUMAN_MODEL;
+}
+
+void drawSnowman() {
 	setPoint(Player.positionX, floor(Player.positionY), Player.positionZ);
-	
+
 	glPushMatrix();
 	glRotatef(-90, 1, 0, 0);
 	glRotatef(180, 0, 0, 1);
 	glRotatef(Player.eyeDirection, 0, 0, 1);
 
-	// Draw body (a 20x20 spherical mesh of radius 0.3)
+	// Draw body (a 20x20 spherical mesh of radius 0.75 at height 0.75)
 	glColor3f(0.83f, 0.83f, 0.83f); // set drawing color to white
 	glPushMatrix();
 	glTranslatef(0.0f, 0.0f, 0.3f);
 	glutSolidSphere(0.3, 20, 20);
 	glPopMatrix();
 
-	// Draw the head (a sphere of radius 0.15)
+	// Draw the head (a sphere of radius 0.25 at height 1.75)
 	glPushMatrix();
 	glTranslatef(0.0f, 0.0f, 0.7f); // position head
 	glutSolidSphere(0.15, 20, 20); // head sphere
 
-	// Draw Eyes (two small grey spheres)
+								   // Draw Eyes (two small grey spheres)
 	glColor3f(0.22f, 0.22f, 0.22f); // eyes are black
 	glPushMatrix();
 	glTranslatef(0.0f, -0.12f, 0.10f); // lift eyes to final position
@@ -235,6 +252,145 @@ void drawCharacter()
 	glPopMatrix();
 
 	glPopMatrix();
+}
+
+int getRotation() {
+	int rotation[] = { -20, -15, -10, -5, 0, 5, 10, 15, 20 };
+	return rotation[animationState];
+}
+
+void toggleAnimation(int _dir) {
+	if (camera == CAMERA_MODE_FPS) return;
+
+	if (_dir == 0) {
+		if (animationState == 8) animationDirection = -1;
+		else if (animationState == 0) animationDirection = 1;
+		if (animationDirection == 1) animationState++;
+		else animationState--;
+	}
+	else {
+		if (animationState == 8) animationDirection = 1;
+		else if (animationState == 0) animationDirection = -1;
+		if (animationDirection == 1) animationState--;
+		else animationState++;
+	}
+}
+
+void drawHuman() {
+	setPoint(Player.positionX, floor(Player.positionY), Player.positionZ);
+	glRotatef(Player.eyeDirection, 0, 1, 0);
+	glColor3f(0.023, 0.13, 0.32);
+	int rotation = getRotation();
+	//Model Begin
+	glPushMatrix();
+	//Legs Begin
+	glPushMatrix();
+	//Left leg Begin
+	glPushMatrix();
+	glTranslatef(0.0, 0.5, 0.0);
+	glTranslatef(-0.0625, 0.0, 0.0);
+	glRotatef(rotation, 1, 0, 0);
+	glColor3f(0.023, 0.13, 0.32);
+	for (int i = 0; i < 5; i++) {
+		glutSolidCube(0.1);
+		glTranslatef(0.0, -0.1, 0.0);
+	}
+	glPushMatrix();
+	glColor3f(0.0, 0.0, 0.0);
+
+	glutSolidCube(0.1);
+	glPopMatrix();
+	glPopMatrix();
+	//Left leg End
+
+	//Right Leg Begin
+	glColor3f(0.023, 0.13, 0.32);
+	glPushMatrix();
+	glTranslatef(0.0, 0.5, 0.0);
+	glTranslatef(+0.0625, 0.0, 0.0);
+	glRotatef(rotation*(-1.), 1, 0, 0);
+
+	glColor3f(0.023, 0.13, 0.32);
+	for (int i = 0; i < 5; i++) {
+		glutSolidCube(0.1);
+		glTranslatef(0.0, -0.1, 0.0);
+	}
+	glPushMatrix();
+	glColor3f(0.0, 0.0, 0.0);
+	glutSolidCube(0.1);
+	glPopMatrix();
+	glPopMatrix();
+	//Right leg End
+	glPopMatrix();
+	//Legs End
+
+	glTranslatef(0.0, 0.5, 0.0);
+	//Body Begin
+	glPushMatrix();
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_LINES);
+	glVertex3f(-0.125f, -0.125f, +0.125f);
+	glVertex3f(+0.125f, -0.125f, +0.125f);
+	glVertex3f(-0.125f, 0.375f, +0.125f);
+	glVertex3f(+0.125f, 0.375f, +0.125f);
+	glEnd();
+
+	glColor3f(0.72, 0.72, 0.72);
+	glutSolidCube(0.25);
+	glTranslatef(0.0, 0.25, 0.0);
+	glutSolidCube(0.25);
+	glPopMatrix();
+	//Body End
+
+	//Right Hand Begin
+	glPushMatrix();
+	glColor3f(0.55, 0.55, 0.55);
+	glTranslatef(0.15625, 0.340, 0.0);
+
+	glRotatef(rotation, 1, 0, 0);
+	for (int i = 0; i < 6; i++) {
+		glutSolidCube(0.0625);
+		glTranslatef(0.0, -0.0625, 0.0);
+	}
+	glPopMatrix();
+	//Right Hand End
+
+	//Left Hand Begin
+	glPushMatrix();
+	glColor3f(0.55, 0.55, 0.55);
+	glTranslatef(-0.15625, 0.340, 0.0);
+	glRotatef(rotation*(-1.), 1, 0, 0);
+	for (int i = 0; i < 6; i++) {
+		glutSolidCube(0.0625);
+		glTranslatef(0.0, -0.0625, 0.0);
+	}
+	glPopMatrix();
+	//Left Hand End
+
+	//Neck Begin
+	glTranslatef(0.0, 0.375, 0.0);
+	glPushMatrix();
+	glColor3f(1.0, 0.87, 0.74);
+	glutSolidCube(0.100);
+	glTranslatef(0.0, 0.125, 0.0);
+	glutSolidCube(0.100);
+	glPopMatrix();
+	//Neck End
+
+	//Head Begin
+	glTranslatef(0.0, 0.15, 0.0);
+	glPushMatrix();
+	glutSolidSphere(0.125, 20, 20);
+	glPopMatrix();
+	glPopMatrix();
+	//Model End
+}
+
+void drawCharacter()
+{
+	if (camera == CAMERA_MODE_FPS) return;
+	if (character == HUMAN_MODEL) drawHuman();
+	else if (character == SNOWMAN_MODEL) drawSnowman();
 }
 
 void drawLevels() {
@@ -264,7 +420,7 @@ void drawScore() {
 	std::string s = oss.str();
 
 	int length = s.length();
-	
+
 	glColor3f(0, 1, 0);
 	glMatrixMode(GL_PROJECTION);
 	double matrix[16];
@@ -306,11 +462,17 @@ void drawTorchLightningMode() {
 	flashlight.position[1] = 0;
 	flashlight.position[2] = Player.positionZ - 1;
 	flashlight.position[3] = 0.0f;
+	SF3dVector viewDirection = Camera.getViewDirection();
+	GLfloat direction[3];
+	direction[0] = viewDirection.x;
+	direction[1] = viewDirection.y;
+	direction[2] = viewDirection.z;
 
 	glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, sourceLight);
 	glEnable(GL_LIGHT0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, flashlight.position);
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, direction);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
@@ -437,6 +599,17 @@ int climb(float newPosX, float newPosY, float newPosZ) {
 	return false;
 }
 
+void jump() {
+	int * nextPos = calculateNextCubePosition((int)Player.positionX, (int)Player.positionY - 1, (int)Player.positionZ);
+	nextPos = calculateNextCubePosition(nextPos[0], nextPos[1], nextPos[2]);
+	if (!cubes[nextPos[0]][nextPos[1]][nextPos[2]].exists) return;
+
+	Player.positionX -= (float)sin(angle) * (float)2.0;
+	Player.positionZ -= (float)cos(angle) * (float)2.0;
+	Camera.Move(F3dVector(-(float)sin(angle) * (float)2.0, 0, -(float)cos(angle) * (float)2.0));
+
+}
+
 int checkMove(float newPosX, float newPosY, float newPosZ) {
 	if (newPosX > N || newPosX < 0 || newPosZ > N || newPosZ < 0) return false; //Prevents Player to move outside the grid
 	if (cubes[(int)newPosX][(int)newPosY][(int)newPosZ].exists) {
@@ -534,6 +707,7 @@ void dropCubes() {
 		}
 	}
 	if (flag) Player.score += 10;
+
 	animateDrop = false;
 }
 
@@ -627,7 +801,7 @@ void switchCamera() {
 		Camera.RotateX(-20);
 		Camera.Move(F3dVector(0.0f, 1.0f, 0.0f));
 	}
-	else if (camera == CAMERA_MODE_TPS){
+	else if (camera == CAMERA_MODE_TPS) {
 		Camera.RotateX(+20);
 		Camera.MoveForwards((GLfloat)-2);
 		Camera.Move(F3dVector(0.0f, -1.0f, 0.0f));
@@ -646,13 +820,14 @@ void renderScene() {
 	drawCharacter();
 	drawScore();
 	drawLights();
+
 }
 
 void idle() {
 	calculateFPS();
 }
 
-void windowDisplay( void ) {
+void windowDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	Camera.Render();
@@ -694,7 +869,7 @@ void windowKey(unsigned char key, int x, int y) {
 		angle = (float)(Player.eyeDirection * PI) / 180.0f;
 		break;
 	case MOVE_RIGHT:
-		if (camera == CAMERA_MODE_FPS) { 
+		if (camera == CAMERA_MODE_FPS) {
 			Player.eyeDirection -= KEYBORAD_SENSITIVITY;
 			Camera.RotateY((GLfloat)-KEYBORAD_SENSITIVITY);
 		}
@@ -702,7 +877,7 @@ void windowKey(unsigned char key, int x, int y) {
 			Player.eyeDirection -= KEYBORAD_SENSITIVITY;
 			Camera.Orbit((GLfloat)Player.eyeDirection, -KEYBORAD_SENSITIVITY, Player.positionX, Player.positionZ);
 		}
-		
+
 		if (Player.eyeDirection == 360 || Player.eyeDirection == -360) Player.eyeDirection = 0;
 		angle = (float)(Player.eyeDirection * PI) / 180.0f;
 		break;
@@ -713,6 +888,7 @@ void windowKey(unsigned char key, int x, int y) {
 		{
 			Player.positionX -= (float)sin(angle) * (float)CAMERA_SPEED;
 			Player.positionZ -= (float)cos(angle) * (float)CAMERA_SPEED;
+			toggleAnimation(0);
 			Camera.Move(F3dVector(-(float)sin(angle) * (float)CAMERA_SPEED, 0, -(float)cos(angle) * (float)CAMERA_SPEED));
 		}
 		break;
@@ -723,6 +899,7 @@ void windowKey(unsigned char key, int x, int y) {
 		{
 			Player.positionX += (float)sin(angle) * (float)CAMERA_SPEED;
 			Player.positionZ += (float)cos(angle) * (float)CAMERA_SPEED;
+			toggleAnimation(1);
 			Camera.Move(F3dVector((float)sin(angle) * (float)CAMERA_SPEED, 0, (float)cos(angle) * (float)CAMERA_SPEED));
 		}
 		break;
@@ -747,6 +924,12 @@ void windowKey(unsigned char key, int x, int y) {
 		break;
 	case SWITCH_CAMERA:
 		switchCamera();
+		break;
+	case SWITCH_CHARACTER:
+		switchCharacter();
+		break;
+	case JUMP:
+		jump();
 		break;
 	default:
 		printf("Pressing %d doesn't to nothing.\n", key);
@@ -811,7 +994,6 @@ void windowMouseMovement(int x, int y) {
 	mousePositionY = y;
 }
 
-//Allocates dynamically space for the 3 dimensional grid
 void allocateSpace() {
 	cubes = (Cube ***)malloc(N * sizeof(Cube **));
 
@@ -860,7 +1042,7 @@ void displayMenu() {
 	int size = atoi(input);
 	printf("Selected size : %d\n", size);
 	puts("Enable debug? [y/n] :");
-	
+
 	while (1) {
 		fgets(input, 10, stdin);
 		if (input[0] == 'y' || input[0] == 'n') break;
@@ -879,6 +1061,9 @@ void loadDefaultParameters() {
 	mousePositionX = MOUSE_POSITION_X;
 	mousePositionY = MOUSE_POSITION_Y;
 	fov = FOV;
+	character = HUMAN_MODEL;
+	animationState = 4;
+	animationDirection = 1;
 }
 
 void initGl() {

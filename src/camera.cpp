@@ -80,3 +80,7 @@ void CCamera::MoveForwards( GLfloat Distance ) {
 	MoveVector.z = ViewDir.z * -Distance;
 	AddF3dVectorToVector(&Position, &MoveVector );
 }
+
+SF3dVector CCamera::getViewDirection() {
+	return ViewDir;
+}

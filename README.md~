@@ -3,7 +3,7 @@ A 3D minecraft-type game using OpenGl library implemented in C++.
 
 This game was developed as the first assignment for the undergraduate couse Computer Graphics and Interactive Systems of the Department of Computer Science and Engineering at the University of Ioannina.
 
-![Alt tag](https://github.com/fotism23/3DMinecraft/blob/master/preview.PNG)
+![Alt text](https://github.com/fotism23/3DMinecraft/blob/master/preview.PNG "3DMinecraft")
 
 # Student information
 Fotios Mitropoulos 2486
@@ -18,7 +18,7 @@ Fotios Mitropoulos 2486
 - Orbiting 3d person camera mode.
 - Zoom in and zoom out with mouse wheel.
 - Multiple lightning modes.
-- Multiple character models.
+- MUltiple character models.
 - Animated character move.
 
 # Rules.
@@ -59,13 +59,13 @@ Keyboard functions.
 
 
 Mouse functions.
-(In order to change the default mouse functions you should modify the main.h file on Mouse Parameters section and set the values of your choice)
+(In order to change the default mouse functions you should modify the main.h file on Mouse Parameters section and set the values of your choise)
 - Horizontal Move Right     : rotate camera clockwise.
 - Horizontal Move Left      : rotate camera counter-clockwise.
 - Mouse wheel up            : zoom in.
 - Mouse wheel down          : zoom out.
 - Left Click                : add cube in front.
-- Right Click               : kick cube.
+- Right Click               : cick cube.
 
 # Contact
 Feel free to contact me for any reason.  
